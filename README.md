@@ -29,6 +29,6 @@ $ sbt "run server ssl"
 ```
 
 ```
-$ sbt "run client placebo"
+$ sbt "run client ssl"
 [info] Simulating client crashing
 ```
