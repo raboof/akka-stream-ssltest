@@ -1,10 +1,12 @@
 import java.security.{ KeyStore, SecureRandom }
 import javax.net.ssl.{ KeyManagerFactory, SSLContext, TrustManagerFactory }
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.io._
-import akka.stream.scaladsl.{ Flow, Sink, Source, Tcp }
+import akka.stream._
+import akka.stream.TLSProtocol._
+import akka.stream.scaladsl._
 import akka.util.ByteString
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -23,9 +25,9 @@ object SslTest {
     }
   }
 
-  val clientSslTls = SslTls(sslContext, NegotiateNewSession.withDefaults, akka.stream.io.Client)
-  val serverSslTls = SslTls(sslContext, NegotiateNewSession.withDefaults, akka.stream.io.Server)
-  val placeboSslTls = SslTlsPlacebo.forScala
+  val clientSslTls = TLS(sslContext, None, NegotiateNewSession.withDefaults, Client)
+  val serverSslTls = TLS(sslContext, None, NegotiateNewSession.withDefaults, Server)
+  val placeboSslTls = TLSPlacebo()
 
   def sslContext(): SSLContext = {
 
@@ -48,7 +50,7 @@ object SslTest {
     context
   }
 
-  def server(sslTlsBidiFlow: SslTls.ScalaFlow): Unit = {
+  def server(sslTlsBidiFlow: BidiFlow[SslTlsOutbound, ByteString, ByteString, SslTlsInbound, NotUsed]): Unit = {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
 
@@ -70,12 +72,12 @@ object SslTest {
         println("Server started, listening on: " + b.localAddress)
       case Failure(e) =>
         println(s"Server could not bind to 127.0.0.1:6000: ${e.getMessage}")
-        system.shutdown()
+        system.terminate()
     }
 
   }
 
-  def client(sslTlsBidiFlow: SslTls.ScalaFlow): Unit = {
+  def client(sslTlsBidiFlow: BidiFlow[SslTlsOutbound, ByteString, ByteString, SslTlsInbound, NotUsed]): Unit = {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
 

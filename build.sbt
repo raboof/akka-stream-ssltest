@@ -1,9 +1,9 @@
 name := """akka-stream-ssltest"""
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.12.8"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-stream-experimental" % "2.0.3"
+  "com.typesafe.akka" %% "akka-stream" % "2.5.23"
 )
 
 mainClass in (Compile, run) := Some("SslTest")
